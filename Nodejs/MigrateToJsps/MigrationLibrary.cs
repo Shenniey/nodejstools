@@ -11,7 +11,7 @@ namespace MigrateToJsps
 {
     public class MigrationLibrary
     {
-        public static void Migrate(string njsprojFile, string newProjectDir) 
+        public static string Migrate(string njsprojFile, string newProjectDir) 
         {
             if (string.IsNullOrEmpty(njsprojFile)) throw new ArgumentNullException("Please input a non-empty path to your .njsproj file.");
 
@@ -19,8 +19,10 @@ namespace MigrateToJsps
             {
                 if (VerifyNjsprojPath(njsprojFile))
                 {
-                    MigrateProject(njsprojFile, newProjectDir);
+                    return MigrateProject(njsprojFile, newProjectDir);
                 }
+
+                throw new ArgumentException(".njsproj path not valid");
             }
             else
             {
@@ -28,7 +30,7 @@ namespace MigrateToJsps
             }
         }
 
-        private static void MigrateProject(string njsprojFilepath, string destinationDir)
+        private static string MigrateProject(string njsprojFilepath, string destinationDir)
         {
             // TODO: move to JspsProjectCreator constructor
             var njsprojFile = NjsprojFileReader.ProcessNjsproj(njsprojFilepath);
@@ -39,9 +41,7 @@ namespace MigrateToJsps
 
             var jspsProjCreator = new JspsProjectCreator(renamedNjsprojDir, njsprojFile, destinationDir);
 
-            jspsProjCreator.CreateJspsProject();
-
-            // write .sln file?
+            return jspsProjCreator.CreateJspsProject();
         }
 
         private static bool VerifyNewProjectDir(string userInputtedPath)

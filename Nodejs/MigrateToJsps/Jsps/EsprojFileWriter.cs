@@ -19,7 +19,7 @@ namespace MigrateToJsps
   </PropertyGroup>
 </Project>
 ";
-        public static void WriteEsproj(string projectDir, string projectName)
+        public static string WriteEsproj(string projectDir, string projectName)
         {
             var fileName = projectName + ".esproj";
             var filePath = Path.Combine(projectDir, fileName);
@@ -29,6 +29,8 @@ namespace MigrateToJsps
                 byte[] buffer = new UTF8Encoding(true).GetBytes(template);
                 fs.Write(buffer, 0, buffer.Length);
             }
+
+            return filePath;
         }
 
         private static string GetSdkVersion()

@@ -15,7 +15,7 @@ namespace MigrateToJsps
             this.newProjectParentDir = newProjectParentDir;
         }
 
-        public void CreateJspsProject() // to be called by outsiders
+        public string CreateJspsProject() // to be called by outsiders
         {
             var parentDir = Path.Combine(newProjectParentDir, njsprojFileModel.ProjectName);
             var newProjDir = Path.Combine(parentDir, njsprojFileModel.ProjectName);
@@ -29,7 +29,7 @@ namespace MigrateToJsps
 
             NugetConfigWriter.GenerateNugetConfig(newProjDir);
 
-            EsprojFileWriter.WriteEsproj(newProjDir, njsprojFileModel.ProjectName);
+            return EsprojFileWriter.WriteEsproj(newProjDir, njsprojFileModel.ProjectName);
         }
 
         private void CopyProjectFiles(string destinationDir)
