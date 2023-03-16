@@ -10,6 +10,7 @@ using MigrateToJsps;
 using System.IO;
 using System.Linq;
 using System.Collections;
+using Microsoft.Build.Utilities;
 
 namespace Microsoft.NodejsTools.Commands
 {
@@ -17,12 +18,8 @@ namespace Microsoft.NodejsTools.Commands
     {
         public override int CommandId => (int)PkgCmdId.cmdidJspsProjectMigrate;
 
-        public override void DoCommand(object sender, EventArgs args)
+        public override async void DoCommand(object sender, EventArgs args)
         {
-            var vsSolution = NodejsPackage.Instance.GetService<SVsSolution, IVsSolution>();
-            var vsSolution4 = NodejsPackage.Instance.GetService<SVsSolution, IVsSolution4>();
-            var uiShell = NodejsPackage.Instance.GetService<SVsUIShell, IVsUIShell>();
-
             Array activeProjects = (Array)NodejsPackage.Instance.DTE.ActiveSolutionProjects;
             EnvDTE.Project project = (EnvDTE.Project)activeProjects.GetValue(0);
 
@@ -34,27 +31,21 @@ namespace Microsoft.NodejsTools.Commands
             project.Save();
             NodejsPackage.Instance.DTE.Solution.Remove(project);
 
-            //ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-            //{
-            //    MigrationLibrary.Migrate(projectFilepath, parentProjectDir);
-            //});
-            var newProjectFilePath = MigrationLibrary.Migrate(projectFilepath, parentProjectDir);
+            JoinableTask<string> newProjectMigration = ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                return MigrationLibrary.Migrate(projectFilepath, parentProjectDir);
+            });
 
-            NodejsPackage.Instance.DTE.Solution.AddFromFile(newProjectFilePath, false);
+            var newProjectFilePath = await newProjectMigration;
 
-            //Guid emptyGuid = Guid.Empty;
-            //Guid newProjectIdentifier = new Guid();
-            //int result = vsSolution.CreateProject(ref emptyGuid, newProjectFilePath, null, null, (uint)__VSCREATEPROJFLAGS.CPF_OPENFILE, ref newProjectIdentifier, out IntPtr projectPtr);
-            //if (result == 0)
-            //{
-            //    // yay! do nothing
-            //}
-            //else
-            //{
-            //    uiShell.ReportErrorInfo(result);
-            //    //NodejsPackage.Instance.DTE.Solution.AddFromFile(newProjectFilePath, false);
-            //}
-
+            if (newProjectFilePath != null)
+            {
+                NodejsPackage.Instance.DTE.Solution.AddFromFile(newProjectFilePath, false);
+            }
+            else
+            {
+                // put old projectfile back?
+            }
         }
     }
 }

@@ -13,7 +13,13 @@ namespace MigrateToJsps
     {
         public static string Migrate(string njsprojFile, string newProjectDir) 
         {
-            if (string.IsNullOrEmpty(njsprojFile)) throw new ArgumentNullException("Please input a non-empty path to your .njsproj file.");
+            if (string.IsNullOrEmpty(njsprojFile))
+            {
+                // LOG ERROR!!
+
+                return null;
+                //throw new ArgumentNullException("Please input a non-empty path to your .njsproj file.");
+            }
 
             if (!string.IsNullOrEmpty(newProjectDir) && VerifyNewProjectDir(newProjectDir))
             {
@@ -21,12 +27,13 @@ namespace MigrateToJsps
                 {
                     return MigrateProject(njsprojFile, newProjectDir);
                 }
-
-                throw new ArgumentException(".njsproj path not valid");
+                return null;
+                //throw new ArgumentException(".njsproj path not valid");
             }
             else
             {
-                throw new ArgumentException("Destination path not valid");
+                return null;
+                //throw new ArgumentException("Destination path not valid");
             }
         }
 
