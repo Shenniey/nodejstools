@@ -16,6 +16,8 @@ namespace MigrateToJsps
 
         public List<string> ProjectFiles { get; set; } = new List<string>();
 
+        public List<string> ProjectIncludeFolders { get; set; } = new List<string>();
+
         public List<Guid> ProjectTypeGuids { get; set; }
     }
 
@@ -50,11 +52,33 @@ namespace MigrateToJsps
     [XmlRoot(ElementName = "ItemGroup")]
     public class ItemGroup
     {
+        [XmlElement(ElementName = "None")]
+        public List<None> None { get; set; }
+
         [XmlElement(ElementName = "Content")]
         public List<Content> Content { get; set; }
 
+        [XmlElement(ElementName = "Compile")]
+        public List<Compile> Compile { get; set; }
+
+        [XmlElement(ElementName = "Folder")]
+        public List<Folder> Folder { get; set; }
+
         //[XmlElement(ElementName = "ProjectReference")]
         //public ProjectReference ProjectReference { get; set; }
+    }
+
+    [XmlRoot(ElementName = "Compile")]
+    public class Compile
+    {
+        [XmlAttribute(AttributeName = "Include")]
+        public string Include { get; set; }
+
+        [XmlAnyElement]
+        public List<XmlElement> ExtraElements { get; set; } = new List<XmlElement> { };
+
+        [XmlAnyAttribute]
+        public List<XmlAttribute> ExtraAttributes { get; set; } = new List<XmlAttribute> { };
     }
 
     [XmlRoot(ElementName = "Content")]
@@ -65,6 +89,32 @@ namespace MigrateToJsps
 
         [XmlAttribute(AttributeName = "Update")]
         public string Update { get; set; }
+
+        [XmlAnyElement]
+        public List<XmlElement> ExtraElements { get; set; } = new List<XmlElement> { };
+
+        [XmlAnyAttribute]
+        public List<XmlAttribute> ExtraAttributes { get; set; } = new List<XmlAttribute> { };
+    }
+
+    [XmlRoot(ElementName = "None")]
+    public class None
+    {
+        [XmlAttribute(AttributeName = "Include")]
+        public string Include { get; set; }
+
+        [XmlAnyElement]
+        public List<XmlElement> ExtraElements { get; set; } = new List<XmlElement> { };
+
+        [XmlAnyAttribute]
+        public List<XmlAttribute> ExtraAttributes { get; set; } = new List<XmlAttribute> { };
+    }
+
+    [XmlRoot(ElementName = "Folder")]
+    public class Folder
+    {
+        [XmlAttribute(AttributeName = "Include")]
+        public string Include { get; set; }
 
         [XmlAnyElement]
         public List<XmlElement> ExtraElements { get; set; } = new List<XmlElement> { };
