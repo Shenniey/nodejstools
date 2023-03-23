@@ -56,7 +56,6 @@ namespace MigrateToJsps
                 {
                     foreach (var content in itemGroup.Content)
                     {
-                        //TODO: need to look at none includes also
                         if (content.Include != null)
                         {
                             files.Add(content.Include);
@@ -65,7 +64,6 @@ namespace MigrateToJsps
 
                     foreach (var compile in itemGroup.Compile)
                     {
-                        //TODO: need to look at none includes also
                         if (compile.Include != null)
                         {
                             files.Add(compile.Include);
@@ -74,7 +72,6 @@ namespace MigrateToJsps
 
                     foreach (var none in itemGroup.None)
                     {
-                        //TODO: need to look at none includes also
                         if (none.Include != null)
                         {
                             files.Add(none.Include);
@@ -83,7 +80,6 @@ namespace MigrateToJsps
 
                     foreach (var folder in itemGroup.Folder)
                     {
-                        //TODO: need to look at none includes also
                         if (folder.Include != null)
                         {
                             folders.Add(folder.Include);
