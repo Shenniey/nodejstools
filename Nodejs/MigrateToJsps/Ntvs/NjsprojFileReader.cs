@@ -50,14 +50,39 @@ namespace MigrateToJsps
                 }
 
                 List<string> files = new List<string>();
+                List<string> folders = new List<string>();
+
                 foreach (var itemGroup in ntvsProj.ItemGroup)
                 {
                     foreach (var content in itemGroup.Content)
                     {
-                        //TODO: need to look at none includes also
                         if (content.Include != null)
                         {
                             files.Add(content.Include);
+                        }
+                    }
+
+                    foreach (var compile in itemGroup.Compile)
+                    {
+                        if (compile.Include != null)
+                        {
+                            files.Add(compile.Include);
+                        }
+                    }
+
+                    foreach (var none in itemGroup.None)
+                    {
+                        if (none.Include != null)
+                        {
+                            files.Add(none.Include);
+                        }
+                    }
+
+                    foreach (var folder in itemGroup.Folder)
+                    {
+                        if (folder.Include != null)
+                        {
+                            folders.Add(folder.Include);
                         }
                     }
                 }
@@ -67,7 +92,7 @@ namespace MigrateToJsps
                     new List<Guid>() : 
                     projectTypeGuidsString.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Select(guidString => Guid.Parse(guidString)).ToList();
 
-                return new NjsprojFileModel() { ProjectName = name, StartupFile = startupFile, ProjectFiles = files, ProjectTypeGuids = projectTypeGuids };
+                return new NjsprojFileModel() { ProjectName = name, StartupFile = startupFile, ProjectFiles = files, ProjectTypeGuids = projectTypeGuids, ProjectIncludeFolders = folders };
             }
         }
     }

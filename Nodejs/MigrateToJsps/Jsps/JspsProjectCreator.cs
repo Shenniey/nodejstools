@@ -22,8 +22,8 @@ namespace MigrateToJsps
 
             Directory.CreateDirectory(newProjDir);
 
-            // TODO: account for none includes also!
             CopyProjectFiles(newProjDir);
+            CreateProjectFolders(newProjDir);
 
             LaunchJsonWriter.CreateLaunchJson(njsprojFileModel.ProjectTypeGuids, newProjDir, njsprojFileModel.StartupFile);
 
@@ -46,6 +46,15 @@ namespace MigrateToJsps
                 }
 
                 File.Copy(source, destination, true);
+            }
+        }
+
+        private void CreateProjectFolders(string destinationDir)
+        {
+            foreach (var projectFolder in njsprojFileModel.ProjectIncludeFolders)
+            {
+                var includedFolder = Path.Combine(destinationDir, projectFolder);
+                Directory.CreateDirectory(includedFolder);
             }
         }
     }
