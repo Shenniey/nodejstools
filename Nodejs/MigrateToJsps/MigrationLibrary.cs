@@ -11,7 +11,7 @@ namespace MigrateToJsps
 {
     public class MigrationLibrary
     {
-        public static string Migrate(string njsprojFile, string newProjectDir) 
+        public static string Migrate(string njsprojFile, string projectDir) 
         {
             if (string.IsNullOrEmpty(njsprojFile))
             {
@@ -21,11 +21,11 @@ namespace MigrateToJsps
                 //throw new ArgumentNullException("Please input a non-empty path to your .njsproj file.");
             }
 
-            if (!string.IsNullOrEmpty(newProjectDir) && VerifyNewProjectDir(newProjectDir))
+            if (!string.IsNullOrEmpty(projectDir) && VerifyNewProjectDir(projectDir))
             {
                 if (VerifyNjsprojPath(njsprojFile))
                 {
-                    return MigrateProject(njsprojFile, newProjectDir);
+                    return MigrateProject(njsprojFile, projectDir);
                 }
                 return null;
                 //throw new ArgumentException(".njsproj path not valid");
@@ -37,16 +37,12 @@ namespace MigrateToJsps
             }
         }
 
-        private static string MigrateProject(string njsprojFilepath, string destinationDir)
+        private static string MigrateProject(string njsprojFilepath, string projectDir)
         {
             // TODO: move to JspsProjectCreator constructor
             var njsprojFile = NjsprojFileReader.ProcessNjsproj(njsprojFilepath);
 
-            var njsprojDir = Path.GetDirectoryName(njsprojFilepath);
-            var renamedNjsprojDir = njsprojDir + "-old";
-            Directory.Move(njsprojDir, renamedNjsprojDir);
-
-            var jspsProjCreator = new JspsProjectCreator(renamedNjsprojDir, njsprojFile, destinationDir);
+            var jspsProjCreator = new JspsProjectCreator(projectDir, njsprojFile);
 
             return jspsProjCreator.CreateJspsProject();
         }

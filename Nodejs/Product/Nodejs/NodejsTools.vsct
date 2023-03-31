@@ -170,8 +170,11 @@
 
       <Button guid="guidMigrateToJspsCmdSet" id="cmdidJspsProjectMigrate" type="Button">
         <Parent guid="guidMigrateToJspsCmdSet" id="cmdidJspsMigrate"/>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>TextChanges</CommandFlag>
         <Strings>
-          <ButtonText>Migrate to JSPS</ButtonText>
+          <ButtonText>Convert to New JavaScript Project Experience</ButtonText>
         </Strings>
       </Button>
       

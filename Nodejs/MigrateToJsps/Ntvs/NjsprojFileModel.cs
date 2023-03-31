@@ -14,6 +14,8 @@ namespace MigrateToJsps
 
         public string StartupFile { get; set; } = string.Empty;
 
+        public string NodejsPort { get; set; } = string.Empty;
+
         public List<string> ProjectFiles { get; set; } = new List<string>();
 
         public List<string> ProjectIncludeFolders { get; set; } = new List<string>();
@@ -41,6 +43,9 @@ namespace MigrateToJsps
 
         [XmlElement(ElementName = "ProjectTypeGuids")]
         public string ProjectTypeGuids { get; set; }
+
+        [XmlElement(ElementName = "NodejsPort")]
+        public string NodejsPort { get; set; }
 
         [XmlAnyElement]
         public List<XmlElement> ExtraElements { get; set; } = new List<XmlElement> { };

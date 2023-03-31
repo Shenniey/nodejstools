@@ -4,86 +4,116 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Navigation;
+using Newtonsoft.Json.Linq;
 
 namespace MigrateToJsps
 {
     internal static class LaunchJsonWriter
     {
-        private static string consoleAppLaunchTemplate =
-@"{
-  ""version"": ""0.2.0"",
-  ""configurations"": [
-    {
-      ""type"": ""node"",
-      ""request"": ""launch"",
-      ""name"": ""Launch Program"",
-      ""skipFiles"": [ ""<node_internals>/**"" ],
-      ""program"": ""${workspaceFolder}/*startupFile*"",
-      ""cwd"": ""${workspaceFolder}"",
-      ""console"": ""externalTerminal""
-    }
-  ]
-}
-";
-
-        private static string expressAppLaunchTemplate =
-@"{
-  ""version"": ""0.2.0"",
-  ""configurations"": [
-    {
-      ""name"": ""localhost (Edge)"",
-      ""type"": ""edge"",
-      ""request"": ""launch"",
-      ""url"": ""http://localhost:3000"",
-      ""webRoot"": ""${workspaceFolder}\\public""
-    },
-    {
-      ""name"": ""localhost (Chrome)"",
-      ""type"": ""chrome"",
-      ""request"": ""launch"",
-      ""url"": ""http://localhost:3000"",
-      ""webRoot"": ""${workspaceFolder}\\public""
-    },
-    {
-      ""name"": ""Debug Dev Env"",
-      ""type"": ""node"",
-      ""request"": ""launch"",
-      ""program"": ""${workspaceFolder}/*startupFile*"",
-      ""cwd"": ""${workspaceFolder}"",
-      ""stopOnEntry"": true
-    }
-  ],
-  ""compounds"": [
-    {
-      ""name"": ""Launch Node and Browser"",
-      ""configurations"": [
-        ""Debug Dev Env"",
-        ""localhost (Edge)""
-      ]
-    }
-  ]
-}
-";
-
-        public static void CreateLaunchJson(List<Guid> projectTypeGuids, string projectRootDir, string startupFile)
+        private static Configuration NodeLaunchTemplate
         {
-            var vscodeDir = Path.Combine(projectRootDir, ".vscode");
+            get 
+            {
+                return new Configuration()
+                {
+                    Name = "Debug node process",
+                    Type = "node",
+                    Request = "launch",
+                    Program = @"${workspaceFolder}/*STARTUP_FILE*",
+                    Skipfiles = new string[] { @"<node_internals/**" },
+                    StopOnEntry = true,
+                    Cwd = @"${workspaceFolder}",
+                    Console = "externalTerminal"
+                }; 
+            }
+        }
+
+        private static Configuration ChromeLaunchTemplate
+        {
+            get
+            {
+                return new Configuration()
+                {
+                    Name = "localhost (Chrome)",
+                    Type = "chrome",
+                    Request = "launch",
+                    Url = @"http://localhost:*PORT*",
+                    WebRoot = @"${workspaceFolder}/public"
+                };
+            }
+        }
+
+        private static Configuration EdgeLaunchTemplate
+        {
+            get
+            {
+                return new Configuration()
+                {
+                    Name = "localhost (Edge)",
+                    Type = "edge",
+                    Request = "launch",
+                    Url = @"http://localhost:*PORT*",
+                    WebRoot = @"${workspaceFolder}/public"
+                };
+            }
+        }
+
+        private static Compound CompoundLaunchTemplate 
+        {
+            get
+            {
+                return new Compound()
+                {
+                    Name = "Launch Node and Browser",
+                    Configurations = new string[] { "Debug node process", "localhost (Chrome)" }
+                };
+            }
+        }
+
+        public static void CreateLaunchJson(string projectDir, NjsprojFileModel njsprojFileModel /*List<Guid> projectTypeGuids, string projectRootDir, string startupFile*/)
+        {
+            var vscodeDir = Path.Combine(projectDir, ".vscode");
             Directory.CreateDirectory(vscodeDir);
             var filePath = Path.Combine(vscodeDir, "launch.json");
 
-            var launchJson = "";
-            if (projectTypeGuids.Contains(ProjectGuids.DotnetMVC5WebApp)) // this means the NTVS project is one of the "web app" templates
+            LaunchJson launchJson = null;
+
+            if (njsprojFileModel.ProjectTypeGuids.Contains(ProjectGuids.DotnetMVC5WebApp)) // this means the NTVS project is one of the "web app" templates
             {
-                launchJson = expressAppLaunchTemplate.Replace("*startupFile*", startupFile);
+                var port = string.IsNullOrEmpty(njsprojFileModel.NodejsPort) ? "3000" : njsprojFileModel.NodejsPort;
+
+                var nodeLaunch = NodeLaunchTemplate;
+                nodeLaunch.Program = nodeLaunch.Program.Replace("*STARTUP_FILE*", njsprojFileModel.StartupFile);
+                nodeLaunch.Env = new JObject(new JProperty("port", port));
+
+                var edgeLaunch = EdgeLaunchTemplate;
+                edgeLaunch.Url = edgeLaunch.Url.Replace("*PORT*", port);
+
+                var chromeLaunch = ChromeLaunchTemplate;
+                chromeLaunch.Url = chromeLaunch.Url.Replace("*PORT*", port);
+
+                Configuration[] launchConfigs = new Configuration[]
+                {
+                    edgeLaunch, chromeLaunch, nodeLaunch
+                };
+
+                var compoundLaunch = new Compound[] { CompoundLaunchTemplate };
+
+                launchJson = new LaunchJson() { Configurations = launchConfigs, Compounds = compoundLaunch };
             }
-            else
+            else // this means the NTVS project is a console app
             {
-                launchJson = consoleAppLaunchTemplate.Replace("*startupFile*", startupFile);
+                var nodeLaunch = NodeLaunchTemplate;
+                nodeLaunch.Program = nodeLaunch.Program.Replace("*STARTUP_FILE*", njsprojFileModel.StartupFile);
+
+                Configuration[] launchConfigs = new Configuration[] { nodeLaunch };
+                launchJson = new LaunchJson() { Configurations = launchConfigs };
             }
 
             using (FileStream fs = File.Create(filePath))
             {
-                byte[] buffer = new UTF8Encoding(true).GetBytes(launchJson);
+                byte[] buffer = new UTF8Encoding(true).GetBytes(launchJson.ToJsonString());
                 fs.Write(buffer, 0, buffer.Length);
             }
         }
