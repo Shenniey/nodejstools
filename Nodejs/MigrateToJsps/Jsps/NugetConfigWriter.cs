@@ -22,7 +22,7 @@ namespace MigrateToJsps
 </configuration>
 ";
 
-        public static void GenerateNugetConfig(string projectDir)
+        public static void GenerateNugetConfig(string projectDir, Logger logger)
         {
             var filePath = Path.Combine(projectDir, "nuget.config");
 
@@ -30,6 +30,8 @@ namespace MigrateToJsps
             {
                 byte[] buffer = new UTF8Encoding(true).GetBytes(template);
                 fs.Write(buffer, 0, buffer.Length);
+
+                logger.AddFile(filePath);
             }
         }
     }

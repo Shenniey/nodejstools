@@ -13,7 +13,7 @@ namespace MigrateToJsps
 {
     internal static class EsprojFileWriter
     {
-        public static string WriteEsproj(string projectDir, string projectName, string startupFile, string port)
+        public static string WriteEsproj(string projectDir, string projectName, string startupFile, string port, Logger logger)
         {
             var fileName = projectName + ".esproj";
             var filePath = Path.Combine(projectDir, fileName);
@@ -57,6 +57,8 @@ namespace MigrateToJsps
             {
                 serializer.Serialize(writer, esprojFile, emptyNamespaces);
             }
+
+            logger.AddFile(filePath);
 
             return filePath;
         }

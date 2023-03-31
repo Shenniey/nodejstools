@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudioTools;
 using Command = Microsoft.VisualStudioTools.Command;
 using Microsoft.NodejsTools.Project;
+using Microsoft.NodejsTools.Telemetry;
 using MigrateToJsps;
 using System.IO;
 using System.Linq;
@@ -28,6 +29,9 @@ namespace Microsoft.NodejsTools.Commands
             var nodeProject = (NodejsProjectNode)project.Object;
             string projectFolder = nodeProject.ProjectFolder;
 
+            var projectGuid = nodeProject.ProjectGuid;
+            TelemetryHelper.LogUserMigratedToJsps(projectGuid.ToString());
+
             project.Save();
             NodejsPackage.Instance.DTE.Solution.Remove(project);
 
@@ -43,6 +47,15 @@ namespace Microsoft.NodejsTools.Commands
             if (newProjectFilepath != null)
             {
                 NodejsPackage.Instance.DTE.Solution.AddFromFile(newProjectFilepath, false);
+
+                if (!NodejsPackage.Instance.DTE.Solution.Saved)
+                {
+                    var solutionFile = NodejsPackage.Instance.DTE.Solution.FullName;
+                    NodejsPackage.Instance.DTE.Solution.SaveAs(solutionFile);
+
+                    string logfile = Path.Combine(projectFolder, "PROJECT_CONVERSION_LOG.txt");
+                    NodejsPackage.Instance.DTE.ItemOperations.OpenFile(logfile);
+                }
             }
             else
             {

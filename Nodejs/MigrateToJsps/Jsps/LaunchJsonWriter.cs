@@ -71,7 +71,7 @@ namespace MigrateToJsps
             }
         }
 
-        public static void CreateLaunchJson(string projectDir, NjsprojFileModel njsprojFileModel /*List<Guid> projectTypeGuids, string projectRootDir, string startupFile*/)
+        public static void CreateLaunchJson(string projectDir, NjsprojFileModel njsprojFileModel, Logger logger)
         {
             var vscodeDir = Path.Combine(projectDir, ".vscode");
             Directory.CreateDirectory(vscodeDir);
@@ -115,6 +115,8 @@ namespace MigrateToJsps
             {
                 byte[] buffer = new UTF8Encoding(true).GetBytes(launchJson.ToJsonString());
                 fs.Write(buffer, 0, buffer.Length);
+
+                logger.AddFile(filePath);
             }
         }
     }
