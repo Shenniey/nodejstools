@@ -39,12 +39,18 @@ namespace MigrateToJsps
 
         private static string MigrateProject(string njsprojFilepath, string projectDir)
         {
+            Logger logger = new Logger(projectDir);
+
             // TODO: move to JspsProjectCreator constructor
             var njsprojFile = NjsprojFileReader.ProcessNjsproj(njsprojFilepath);
 
-            var jspsProjCreator = new JspsProjectCreator(projectDir, njsprojFile);
+            var jspsProjCreator = new JspsProjectCreator(projectDir, njsprojFile, logger);
 
-            return jspsProjCreator.CreateJspsProject();
+            var esprojFilepath = jspsProjCreator.CreateJspsProject();
+
+            logger.WriteLogFile();
+
+            return esprojFilepath;
         }
 
         private static bool VerifyNewProjectDir(string userInputtedPath)

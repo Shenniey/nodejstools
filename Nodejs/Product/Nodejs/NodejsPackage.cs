@@ -100,7 +100,8 @@ namespace Microsoft.NodejsTools
             };
 
             var migrateToJspsCmd = new List<Command> {
-                new MigrateToJspsCommand()
+                new MigrateToJspsCommand(),
+                new RevertMigrationCommand()
             };
 
             RegisterCommands(importWizardCmd, Guids.NodejsCmdSet);

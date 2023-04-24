@@ -8,6 +8,7 @@ namespace Microsoft.NodejsTools
 
         public const int cmdidImportWizard = 0x205;
         public const int cmdidJspsProjectMigrate = 0x206;
+        public const int cmdidJspsProjectRevert = 0x207;
 
         public const int cmdidDiagnostics = 0x208;
         public const int cmdidAddFileCommand = 0x211;

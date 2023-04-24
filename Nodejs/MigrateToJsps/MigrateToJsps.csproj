@@ -124,6 +124,7 @@
     <Compile Include="Jsps\LaunchJson\Compound.cs" />
     <Compile Include="Jsps\LaunchJson\Configuration.cs" />
     <Compile Include="Jsps\LaunchJson\LaunchJson.cs" />
+    <Compile Include="Jsps\Logger.cs" />
     <Compile Include="MigrationLibrary.cs" />
     <Compile Include="Jsps\EsprojFileWriter.cs" />
     <Compile Include="Jsps\JspsProjectCreator.cs" />
