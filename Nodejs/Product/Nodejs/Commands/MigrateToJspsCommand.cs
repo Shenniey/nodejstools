@@ -23,7 +23,7 @@ namespace Microsoft.NodejsTools.Commands
 
         public override async void DoCommand(object sender, EventArgs args)
         {
-            EnvDTE.Project project = GetActiveProject();
+            EnvDTE.Project project = MigrateToJspsUtils.GetActiveProject();
 
             string projectFilepath = project.FullName;
 
@@ -52,7 +52,7 @@ namespace Microsoft.NodejsTools.Commands
                     var solutionFile = NodejsPackage.Instance.DTE.Solution.FullName;
                     NodejsPackage.Instance.DTE.Solution.SaveAs(solutionFile);
 
-                    string logfile = Path.Combine(projectFolder, "PROJECT_CONVERSION_LOG.txt");
+                    string logfile = Path.Combine(projectFolder, "PROJECT_MIGRATION_LOG.txt");
                     NodejsPackage.Instance.DTE.ItemOperations.OpenFile(logfile);
                 }
             }
@@ -65,69 +65,38 @@ namespace Microsoft.NodejsTools.Commands
         public override EventHandler BeforeQueryStatus
         {
             get { 
-                return new EventHandler((sender, args) => { 
-                    if (MigrationIsEnabled())
+                return new EventHandler((sender, args) => {
+
+                    var cmd = sender as OleMenuCommand;
+                    if (cmd != null)
                     {
-                        try
+                        cmd.Visible = cmd.Enabled = false;
+                    }
+
+                    try
+                    {
+                        EnvDTE.Project activeProject = MigrateToJspsUtils.GetActiveProject();
+
+                        if (MigrateToJspsUtils.MigrationIsEnabled() && MigrateToJspsUtils.ProjectFileIsNtvs(activeProject.FullName))
                         {
-                            EnvDTE.Project activeProject = GetActiveProject();
+                            cmd.Visible = cmd.Enabled = true;
 
-                            var cmd = sender as OleMenuCommand;
-                            if (cmd != null)
+                            if (MigrateToJspsUtils.IsTypeScriptProject(activeProject))
                             {
-                                cmd.Visible = cmd.Enabled = false;
-
-                                if (IsNtvsProject(activeProject.FullName))
-                                {
-                                    cmd.Visible = cmd.Enabled = true;
-
-                                    if (IsTypescriptProject(activeProject))
-                                    {
-                                        cmd.Text = "Convert to New TypeScript Project Experience";
-                                    }
-                                    else
-                                    {
-                                        cmd.Text = "Convert to New JavaScript Project Experience";
-                                    }
-                                }
+                                cmd.Text = "Convert to New TypeScript Project Experience";
+                            }
+                            else
+                            {
+                                cmd.Text = "Convert to New JavaScript Project Experience";
                             }
                         }
-                        catch (Exception e)
-                        {
-                            // send telemetry event
-                        }
+                    }
+                    catch (Exception e)
+                    {
+ 
                     }
                 });
             }
-        }
-
-        private bool IsTypescriptProject(EnvDTE.Project project)
-        {
-            var nodeProject = (NodejsProjectNode)project.Object;
-            return nodeProject.IsTypeScriptProject;
-        }
-
-        private bool IsNtvsProject(string filepath)
-        {
-            string fileExtension = Path.GetExtension(filepath);
-            return (!string.IsNullOrEmpty(fileExtension)) && (fileExtension == NodejsConstants.NodejsProjectExtension);
-        }
-
-        private EnvDTE.Project GetActiveProject()
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            Array activeProjects = (Array)NodejsPackage.Instance.DTE.ActiveSolutionProjects;
-            EnvDTE.Project project = (EnvDTE.Project)activeProjects.GetValue(0);
-
-            return project;
-        }
-
-        internal static bool MigrationIsEnabled()
-        {
-            IVsFeatureFlags featureFlags = ServiceProvider.GlobalProvider.GetService(typeof(SVsFeatureFlags))  as IVsFeatureFlags;
-
-            return featureFlags.IsFeatureEnabled("JavaScript.NodejsTools.EnableNtvsJspsMigration", defaultValue: false);
         }
     }
 }

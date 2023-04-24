@@ -69,6 +69,7 @@
     </Compile>
     <Compile Include="Commands\ImportWizardCommand.cs" />
     <Compile Include="Commands\MigrateToJspsCommand.cs" />
+    <Compile Include="Commands\MigrateToJspsUtils.cs" />
     <Compile Include="Commands\RevertMigrationCommand.cs" />
     <Compile Include="Debugger\NodeProcess.cs" />
     <Compile Include="Diagnostics\HierarchyItem.cs" />
@@ -293,6 +294,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="FeatureFlags.pkgdef">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="OpenFolder.pkgdef">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>

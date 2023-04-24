@@ -14,7 +14,7 @@ namespace Microsoft.NodejsTools.Commands
 
         public override void DoCommand(object sender, EventArgs args)
         {
-            EnvDTE.Project project = GetActiveProject();
+            EnvDTE.Project project = MigrateToJspsUtils.GetActiveProject();
 
             string projectFilepath = project.FullName;
             string projectFolder = Path.GetDirectoryName(projectFilepath); 
@@ -37,7 +37,7 @@ namespace Microsoft.NodejsTools.Commands
                     NodejsPackage.Instance.DTE.Solution.SaveAs(solutionFile);
                 }
 
-                EnvDTE.Project oldNtvsProject = GetActiveProject();
+                EnvDTE.Project oldNtvsProject = MigrateToJspsUtils.GetActiveProject();
                 var projectGuid = oldNtvsProject.GetNodejsProject().ProjectGuid;
 
                 TelemetryHelper.LogUserRevertedBackToNtvs();
@@ -49,52 +49,31 @@ namespace Microsoft.NodejsTools.Commands
             get
             {
                 return new EventHandler((sender, args) => {
-                    if (MigrateToJspsCommand.MigrationIsEnabled())
+
+                    var cmd = sender as OleMenuCommand;
+                    if (cmd != null)
                     {
-                        try
-                        {
-                            EnvDTE.Project activeProject = GetActiveProject();
+                        cmd.Visible = cmd.Enabled = false;
+                    }
 
-                            var cmd = sender as OleMenuCommand;
-                            if (cmd != null)
-                            {
-                                cmd.Visible = cmd.Enabled = false;
+                    try
+                    {
+                        EnvDTE.Project activeProject = MigrateToJspsUtils.GetActiveProject();
 
-                                if (IsJspsProject(activeProject.FullName) && ContainsNjsProj(activeProject.FullName))
-                                {
-                                    cmd.Visible = cmd.Enabled = true;
-                                }
-                            }
-                        }
-                        catch (Exception e)
+                        string projectDir = Path.GetDirectoryName(activeProject.FullName);
+
+                        if (MigrateToJspsUtils.MigrationIsEnabled() && MigrateToJspsUtils.ProjectFileIsJsps(activeProject.FullName) && MigrateToJspsUtils.DirectoryContainsNjsproj(projectDir))
                         {
-                            // send telemetry event
+                            cmd.Visible = cmd.Enabled = true;
                         }
+                    }
+                    catch (Exception e)
+                    {
+
                     }
                 });
             }
         }
 
-        private bool ContainsNjsProj(string projectFilepath)
-        {
-            string projectDir = Path.GetDirectoryName(projectFilepath);
-            return Directory.GetFiles(projectDir).Where(file => file.EndsWith(".njsproj")).Any();
-        }
-
-        private bool IsJspsProject(string filepath)
-        {
-            string fileExtension = Path.GetExtension(filepath);
-            return (!string.IsNullOrEmpty(fileExtension)) && (fileExtension == ".esproj");
-        }
-
-        private EnvDTE.Project GetActiveProject()
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            Array activeProjects = (Array)NodejsPackage.Instance.DTE.ActiveSolutionProjects;
-            EnvDTE.Project project = (EnvDTE.Project)activeProjects.GetValue(0);
-
-            return project;
-        }
     }
 }

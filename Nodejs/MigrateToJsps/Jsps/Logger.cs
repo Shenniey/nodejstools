@@ -14,14 +14,14 @@ namespace MigrateToJsps
         private string projectDir;
         private List<string> listOfFiles;
 
-        public string LogfilePath { get => Path.Combine(projectDir, "PROJECT_CONVERSION_LOG.txt"); }
+        public string LogfilePath { get => Path.Combine(projectDir, "PROJECT_MIGRATION_LOG.txt"); }
 
         private string template =
 @"Hello! Thank you for trying out our new JavaScript and TypeScript project experience. We've added the below list of files to your project directory in order to enable the new experience:
 
 *LIST_OF_NEW_FILES*
 
-We'd love to get your feedback! Please submit any bugs or improvements that need to be made [here](uhhhh tbd at a later date).
+We'd love to get your feedback! Please submit any bugs or improvements that need to be made by going to Help -> Send Feedback.
 
 If you'd like to revert to your original project, you can right-click on the project and click on 'Revert Project To Old Experience'.
 ";
