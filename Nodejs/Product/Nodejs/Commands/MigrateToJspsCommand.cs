@@ -13,6 +13,7 @@ using System.Linq;
 using System.Collections;
 using Microsoft.Build.Utilities;
 using System.Runtime.Remoting.Channels;
+using Microsoft.Internal.VisualStudio.Shell.Interop;
 
 namespace Microsoft.NodejsTools.Commands
 {
@@ -30,7 +31,7 @@ namespace Microsoft.NodejsTools.Commands
             string projectFolder = nodeProject.ProjectFolder;
 
             var projectGuid = nodeProject.ProjectGuid;
-            TelemetryHelper.LogUserMigratedToJsps(projectGuid.ToString());
+            TelemetryHelper.LogUserMigratedToJsps();
 
             project.Save();
             NodejsPackage.Instance.DTE.Solution.Remove(project);
@@ -41,8 +42,6 @@ namespace Microsoft.NodejsTools.Commands
             });
 
             var newProjectFilepath = await newProjectMigration;
-
-            //var newProjectFilepath = MigrationLibrary.Migrate(projectFilepath, projectFolder);
 
             if (newProjectFilepath != null)
             {
@@ -67,33 +66,36 @@ namespace Microsoft.NodejsTools.Commands
         {
             get { 
                 return new EventHandler((sender, args) => { 
-                    try
+                    if (MigrationIsEnabled())
                     {
-                        EnvDTE.Project activeProject = GetActiveProject();
-
-                        var cmd = sender as OleMenuCommand;
-                        if (cmd != null)
+                        try
                         {
-                            cmd.Visible = cmd.Enabled = false;
+                            EnvDTE.Project activeProject = GetActiveProject();
 
-                            if (IsNtvsProject(activeProject.FullName))
+                            var cmd = sender as OleMenuCommand;
+                            if (cmd != null)
                             {
-                                cmd.Visible = cmd.Enabled = true;
+                                cmd.Visible = cmd.Enabled = false;
 
-                                if (IsTypescriptProject(activeProject))
+                                if (IsNtvsProject(activeProject.FullName))
                                 {
-                                    cmd.Text = "Convert to New TypeScript Project Experience";
-                                }
-                                else
-                                {
-                                    cmd.Text = "Convert to New JavaScript Project Experience";
+                                    cmd.Visible = cmd.Enabled = true;
+
+                                    if (IsTypescriptProject(activeProject))
+                                    {
+                                        cmd.Text = "Convert to New TypeScript Project Experience";
+                                    }
+                                    else
+                                    {
+                                        cmd.Text = "Convert to New JavaScript Project Experience";
+                                    }
                                 }
                             }
                         }
-                    }
-                    catch (Exception e) 
-                    {
-                        // send telemetry event
+                        catch (Exception e)
+                        {
+                            // send telemetry event
+                        }
                     }
                 });
             }
@@ -119,6 +121,13 @@ namespace Microsoft.NodejsTools.Commands
             EnvDTE.Project project = (EnvDTE.Project)activeProjects.GetValue(0);
 
             return project;
+        }
+
+        internal static bool MigrationIsEnabled()
+        {
+            IVsFeatureFlags featureFlags = ServiceProvider.GlobalProvider.GetService(typeof(SVsFeatureFlags))  as IVsFeatureFlags;
+
+            return featureFlags.IsFeatureEnabled("JavaScript.NodejsTools.EnableNtvsJspsMigration", defaultValue: false);
         }
     }
 }

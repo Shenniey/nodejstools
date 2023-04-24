@@ -40,7 +40,7 @@ namespace Microsoft.NodejsTools.Commands
                 EnvDTE.Project oldNtvsProject = GetActiveProject();
                 var projectGuid = oldNtvsProject.GetNodejsProject().ProjectGuid;
 
-                TelemetryHelper.LogUserRevertedBackToNtvs(projectGuid.ToString());
+                TelemetryHelper.LogUserRevertedBackToNtvs();
             }
         }
 
@@ -49,24 +49,27 @@ namespace Microsoft.NodejsTools.Commands
             get
             {
                 return new EventHandler((sender, args) => {
-                    try
+                    if (MigrateToJspsCommand.MigrationIsEnabled())
                     {
-                        EnvDTE.Project activeProject = GetActiveProject();
-
-                        var cmd = sender as OleMenuCommand;
-                        if (cmd != null)
+                        try
                         {
-                            cmd.Visible = cmd.Enabled = false;
+                            EnvDTE.Project activeProject = GetActiveProject();
 
-                            if (IsJspsProject(activeProject.FullName) && ContainsNjsProj(activeProject.FullName))
+                            var cmd = sender as OleMenuCommand;
+                            if (cmd != null)
                             {
-                                cmd.Visible = cmd.Enabled = true;
+                                cmd.Visible = cmd.Enabled = false;
+
+                                if (IsJspsProject(activeProject.FullName) && ContainsNjsProj(activeProject.FullName))
+                                {
+                                    cmd.Visible = cmd.Enabled = true;
+                                }
                             }
                         }
-                    }
-                    catch (Exception e)
-                    {
-                        // send telemetry event
+                        catch (Exception e)
+                        {
+                            // send telemetry event
+                        }
                     }
                 });
             }

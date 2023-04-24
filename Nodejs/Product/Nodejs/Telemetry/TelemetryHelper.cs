@@ -46,14 +46,14 @@ namespace Microsoft.NodejsTools.Telemetry
             LogUserTaskEvent(TestDiscoveryStarted, (TestAdapterName, testAdapterName));
         }
 
-        public static void LogUserMigratedToJsps(string projectGuid)
+        public static void LogUserMigratedToJsps()
         {
-            LogUserTaskEvent(MigratedToJsps, (ProjectGuid, projectGuid));
+            LogUserTaskEvent(MigratedToJsps);
         }
 
-        public static void LogUserRevertedBackToNtvs(string projectGuid)
+        public static void LogUserRevertedBackToNtvs()
         {
-            LogUserTaskEvent(MigratedToJsps, (ProjectGuid, projectGuid));
+            LogUserTaskEvent(RevertedBackToNtvs);
         }
 
         public static void LogUserTaskEvent(string eventName, bool isProject)
